@@ -1,40 +1,34 @@
 import React from 'react';
-import { useQuiz } from '../context/QuizContext';
 import ConsentPage from '../components/ConsentPage';
 import QuizQuestion from '../components/QuizQuestion';
 import ResultPage from '../components/ResultPage';
 import UserInfoForm from '../components/UserInfoForm';
-import ThankYouPage from '../components/ThankYouPage';
+import { useQuiz } from '../context/QuizContext';
 import { questions } from '../data/questions';
 
-const Index = () => {
+const Index: React.FC = () => {
   const { currentQuestionIndex, userConsent } = useQuiz();
-  
-  // Если пользователь не дал согласие, показываем страницу согласия
+
+  // Show consent page if user hasn't consented yet
   if (!userConsent) {
     return <ConsentPage />;
   }
-  
-  // Если текущий индекс вопроса в пределах массива вопросов, показываем вопрос
+
+  // Show questions
   if (currentQuestionIndex >= 0 && currentQuestionIndex < questions.length) {
     return <QuizQuestion />;
   }
-  
-  // Показываем страницу результатов
+
+  // Show results page
   if (currentQuestionIndex === questions.length) {
     return <ResultPage />;
   }
-  
-  // Показываем форму для ввода контактных данных
+
+  // Show user info form
   if (currentQuestionIndex === questions.length + 1) {
     return <UserInfoForm />;
   }
-  
-  // Показываем страницу благодарности
-  if (currentQuestionIndex === questions.length + 2) {
-    return <ThankYouPage />;
-  }
-  
+
   return null;
 };
 

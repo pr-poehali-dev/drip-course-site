@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useQuiz } from '../context/QuizContext';
-import { useToast } from './ui/use-toast';
-import { v4 as uuidv4 } from 'uuid';
+import { useToast } from '../components/ui/use-toast';
 
 const UserInfoForm: React.FC = () => {
-  const { userData, updateUserData, goToNextQuestion, answers, getResult } = useQuiz();
+  const { userData, updateUserData, getResult, answers } = useQuiz();
+  const [firstName, setFirstName] = useState(userData.firstName || '');
+  const [lastName, setLastName] = useState(userData.lastName || '');
+  const [phone, setPhone] = useState(userData.phone || '');
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    updateUserData({ [name]: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userData.firstName || !userData.lastName || !userData.phone) {
+    if (!firstName || !lastName || !phone) {
       toast({
         title: "Ошибка",
         description: "Пожалуйста, заполните все поля",
@@ -29,108 +27,72 @@ const UserInfoForm: React.FC = () => {
       return;
     }
     
-    // Validate phone number
-    const phoneRegex = /^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
-    if (!phoneRegex.test(userData.phone)) {
-      toast({
-        title: "Ошибка",
-        description: "Пожалуйста, введите корректный номер телефона",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Update user data in context
+    updateUserData({ firstName, lastName, phone });
     
-    setIsSubmitting(true);
+    // Save result to localStorage
+    const results = JSON.parse(localStorage.getItem('quizResults') || '[]');
+    results.push({
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      userData: { firstName, lastName, phone },
+      result: getResult(),
+      answers
+    });
+    localStorage.setItem('quizResults', JSON.stringify(results));
     
-    try {
-      // In a real app, we would send this data to a backend
-      // For now, we'll just simulate a network request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Save results to localStorage (in a real app, send to server)
-      const quizResult = {
-        id: uuidv4(),
-        date: new Date().toISOString(),
-        userData,
-        result: getResult(),
-        answers
-      };
-      
-      // Get existing results or initialize empty array
-      const existingResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
-      localStorage.setItem('quizResults', JSON.stringify([...existingResults, quizResult]));
-      
-      // Show success message
-      toast({
-        title: "Данные отправлены",
-        description: "Спасибо за прохождение теста! Мы свяжемся с вами в ближайшее время.",
-      });
-      
-      // Go to thank you page
-      goToNextQuestion();
-    } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось отправить данные. Пожалуйста, попробуйте еще раз.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Navigate to thank you page
+    navigate('/thank-you');
   };
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8">
-      <Card className="shadow-lg">
-        <CardHeader className="bg-primary text-white">
-          <CardTitle className="text-xl font-bold">
-            Контактная информация
-          </CardTitle>
+      <Card className="bg-white shadow-lg">
+        <CardHeader className="text-center bg-primary text-white rounded-t-lg">
+          <CardTitle className="text-2xl font-bold">Ваши контактные данные</CardTitle>
+          <CardDescription className="text-primary-foreground">
+            Мы свяжемся с вами для консультации
+          </CardDescription>
         </CardHeader>
-        
         <form onSubmit={handleSubmit}>
           <CardContent className="p-6 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">Имя</Label>
               <Input 
-                id="firstName"
-                name="firstName"
+                id="firstName" 
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Введите ваше имя"
-                value={userData.firstName || ''}
-                onChange={handleChange}
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="lastName">Отчество</Label>
               <Input 
-                id="lastName"
-                name="lastName"
+                id="lastName" 
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 placeholder="Введите ваше отчество"
-                value={userData.lastName || ''}
-                onChange={handleChange}
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="phone">Номер телефона</Label>
               <Input 
-                id="phone"
-                name="phone"
-                type="tel"
+                id="phone" 
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 placeholder="+7 (___) ___-__-__"
-                value={userData.phone || ''}
-                onChange={handleChange}
               />
-              <p className="text-xs text-muted-foreground">
-                Формат: +7 (XXX) XXX-XX-XX
-              </p>
             </div>
           </CardContent>
-          
-          <CardFooter className="flex justify-end p-6 pt-2">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Отправка..." : "Отправить результаты"}
+          <CardFooter className="flex justify-center p-6 pt-0">
+            <Button 
+              type="submit"
+              className="w-full md:w-auto"
+              size="lg"
+            >
+              Отправить
             </Button>
           </CardFooter>
         </form>
