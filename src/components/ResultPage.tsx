@@ -1,9 +1,10 @@
 import React from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
 import { useQuiz } from '../context/QuizContext';
 import { results } from '../data/questions';
-import { Separator } from './ui/separator';
+import { Badge } from './ui/badge';
+import { CheckCircle } from 'lucide-react';
 
 const ResultPage: React.FC = () => {
   const { getResult, goToNextQuestion } = useQuiz();
@@ -14,34 +15,44 @@ const ResultPage: React.FC = () => {
     <div className="container max-w-3xl mx-auto px-4 py-8">
       <Card className="bg-white shadow-lg">
         <CardHeader className="text-center bg-primary text-white rounded-t-lg">
-          <CardTitle className="text-2xl font-bold">Результаты теста</CardTitle>
+          <CardTitle className="text-2xl font-bold">Ваш результат</CardTitle>
           <CardDescription className="text-primary-foreground">
-            Мы проанализировали ваши ответы
+            Рекомендуемый курс капельниц
           </CardDescription>
         </CardHeader>
+        
         <CardContent className="p-6 space-y-6">
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-semibold">{result.title}</h2>
+          <div className="text-center mb-8">
+            <Badge className="mb-2 text-lg py-1 px-4">{result.type}</Badge>
+            <h2 className="text-2xl font-bold mb-4">{result.title}</h2>
+            <p className="text-muted-foreground">{result.description}</p>
           </div>
           
-          <p className="text-lg">{result.description}</p>
-          
-          <Separator />
-          
-          <div className="space-y-3">
-            <h3 className="font-semibold">Анализы для консультации:</h3>
-            <ul className="list-disc pl-5 space-y-1">
+          <div className="bg-secondary/30 p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Анализы для консультации:</h3>
+            <ul className="space-y-2">
               {result.analyses.map((analysis, index) => (
-                <li key={index}>{analysis}</li>
+                <li key={index} className="flex items-start gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>{analysis}</span>
+                </li>
               ))}
             </ul>
           </div>
+          
+          <div className="bg-primary/10 p-4 rounded-lg text-center">
+            <p className="text-sm">
+              Для получения подробной консультации и записи на процедуры, пожалуйста, оставьте свои контактные данные.
+              Наш специалист свяжется с вами в ближайшее время.
+            </p>
+          </div>
         </CardContent>
+        
         <CardFooter className="flex justify-center p-6 pt-0">
           <Button 
             onClick={goToNextQuestion}
-            className="w-full md:w-auto"
             size="lg"
+            className="w-full md:w-auto"
           >
             Продолжить
           </Button>
