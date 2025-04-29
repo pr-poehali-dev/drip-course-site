@@ -1,32 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '../components/ui/table';
-import { Badge } from '../components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { QuizResult } from '../types/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+
+type ResultEntry = {
+  id: number;
+  firstName: string;
+  middleName: string;
+  phone: string;
+  result: string;
+  date: string;
+};
 
 const ResultsAdmin: React.FC = () => {
-  const [results, setResults] = useState<QuizResult[]>([]);
-
+  const [results, setResults] = useState<ResultEntry[]>([]);
+  
   useEffect(() => {
-    // Load results from localStorage
-    const storedResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
-    setResults(storedResults);
+    // In a real app, this would be an API call
+    const savedResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
+    setResults(savedResults);
   }, []);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ru-RU');
-  };
-
-  const getBadgeColor = (resultType: string) => {
-    switch (resultType) {
+  
+  const getBadgeColor = (result: string) => {
+    switch(result) {
       case 'ДЕТОКС':
         return 'bg-green-100 text-green-800';
       case 'СНИЖЕНИЕ ВЕСА':
@@ -39,19 +36,18 @@ const ResultsAdmin: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto p-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Результаты тестирования</CardTitle>
+          <CardTitle className="text-2xl">Результаты тестирования</CardTitle>
+          <CardDescription>
+            Список пользователей, прошедших тест
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {results.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Нет данных для отображения
-            </div>
-          ) : (
+          {results.length > 0 ? (
             <Table>
-              <TableCaption>Список всех результатов тестирования</TableCaption>
+              <TableCaption>Всего записей: {results.length}</TableCaption>
               <TableHeader>
                 <TableRow>
                   <TableHead>Дата</TableHead>
@@ -62,21 +58,27 @@ const ResultsAdmin: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.map((result) => (
-                  <TableRow key={result.id}>
-                    <TableCell>{formatDate(result.date)}</TableCell>
-                    <TableCell>{result.userData.firstName}</TableCell>
-                    <TableCell>{result.userData.lastName}</TableCell>
-                    <TableCell>{result.userData.phone}</TableCell>
+                {results.map((entry) => (
+                  <TableRow key={entry.id}>
                     <TableCell>
-                      <Badge className={getBadgeColor(result.result)}>
-                        {result.result}
+                      {format(new Date(entry.date), 'dd.MM.yyyy HH:mm')}
+                    </TableCell>
+                    <TableCell>{entry.firstName}</TableCell>
+                    <TableCell>{entry.middleName || '—'}</TableCell>
+                    <TableCell>{entry.phone}</TableCell>
+                    <TableCell>
+                      <Badge className={getBadgeColor(entry.result)}>
+                        {entry.result}
                       </Badge>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              Пока нет данных
+            </div>
           )}
         </CardContent>
       </Card>

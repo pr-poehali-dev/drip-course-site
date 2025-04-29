@@ -1,35 +1,27 @@
 import React from 'react';
+import { useQuiz } from '../context/QuizContext';
 import ConsentPage from '../components/ConsentPage';
 import QuizQuestion from '../components/QuizQuestion';
 import ResultPage from '../components/ResultPage';
 import UserInfoForm from '../components/UserInfoForm';
-import { useQuiz } from '../context/QuizContext';
 import { questions } from '../data/questions';
 
 const Index: React.FC = () => {
-  const { currentQuestionIndex, userConsent } = useQuiz();
+  const { currentQuestionIndex } = useQuiz();
 
-  // Show consent page if user hasn't consented yet
-  if (!userConsent) {
+  // Render based on currentQuestionIndex
+  if (currentQuestionIndex === -1) {
     return <ConsentPage />;
-  }
-
-  // Show questions
-  if (currentQuestionIndex >= 0 && currentQuestionIndex < questions.length) {
+  } else if (currentQuestionIndex >= 0 && currentQuestionIndex < questions.length) {
     return <QuizQuestion />;
-  }
-
-  // Show results page
-  if (currentQuestionIndex === questions.length) {
+  } else if (currentQuestionIndex === questions.length) {
     return <ResultPage />;
-  }
-
-  // Show user info form
-  if (currentQuestionIndex === questions.length + 1) {
+  } else if (currentQuestionIndex === questions.length + 1) {
     return <UserInfoForm />;
   }
 
-  return null;
+  // Fallback
+  return <ConsentPage />;
 };
 
 export default Index;

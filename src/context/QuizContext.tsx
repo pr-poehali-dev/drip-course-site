@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Answer, ResultType, UserData } from '../types/types';
-import { questions, results } from '../data/questions';
+import { questions } from '../data/questions';
 
 type QuizContextType = {
   currentQuestionIndex: number;
@@ -35,9 +35,7 @@ export const QuizProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const goToNextQuestion = () => {
-    if (currentQuestionIndex < questions.length) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    }
+    setCurrentQuestionIndex(prev => prev + 1);
   };
 
   const goToPreviousQuestion = () => {
